@@ -62,10 +62,10 @@ contract EditionFactory is IBatchEditionMinter {
     /// Create a new batch edition contract with a deterministic address, with delayed batch minting
     /// @param signedAttestation a signed message from Showtime authorizing this action on behalf of the edition creator
     /// @return editionAddress the address of the created edition
-    function create(
-        EditionData calldata data,
-        SignedAttestation calldata signedAttestation
-    ) public returns (address editionAddress) {
+    function create(EditionData calldata data, SignedAttestation calldata signedAttestation)
+        public
+        returns (address editionAddress)
+    {
         editionAddress = beforeMint(data, signedAttestation);
 
         // we don't mint at this stage, we expect subsequent calls to `mintBatch`
@@ -97,11 +97,10 @@ contract EditionFactory is IBatchEditionMinter {
     /// @param pointer the address of the SSTORE2 pointer with the recipients of the batch mint for this edition
     /// @param signedAttestation a signed message from Showtime authorizing this action on behalf of the edition creator
     /// @return editionAddress the address of the created edition
-    function createWithBatch(
-        EditionData calldata data,
-        address pointer,
-        SignedAttestation calldata signedAttestation
-    ) public returns (address editionAddress) {
+    function createWithBatch(EditionData calldata data, address pointer, SignedAttestation calldata signedAttestation)
+        public
+        returns (address editionAddress)
+    {
         // this will revert if the attestation is invalid
         editionAddress = beforeMint(data, signedAttestation);
 
@@ -125,7 +124,6 @@ contract EditionFactory is IBatchEditionMinter {
     /*//////////////////////////////////////////////////////////////
                              VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
-
 
     /// @dev we expect the signed attestation's context to correspond to the address of this contract (EditionFactory)
     /// @dev we expect the signed attestation's beneficiary to be the lowest 160 bits of hash(edition || relayer)
@@ -221,10 +219,7 @@ contract EditionFactory is IBatchEditionMinter {
         emit CreatedBatchEdition(editionId, data.creatorAddr, address(edition), data.tags);
     }
 
-    function afterMint(
-        address edition,
-        EditionData calldata data
-    ) internal {
+    function afterMint(address edition, EditionData calldata data) internal {
         string memory creatorName = data.creatorName;
         if (bytes(creatorName).length > 0) {
             string[] memory propertyNames = new string[](1);

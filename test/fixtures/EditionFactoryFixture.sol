@@ -84,9 +84,7 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
         newEdition = editionFactory.createWithBatch(editionData, recipients, signedAttestation);
     }
 
-    function createWithBatch(
-        bytes memory recipients
-    ) public returns (address newEdition) {
+    function createWithBatch(bytes memory recipients) public returns (address newEdition) {
         return createWithBatch(DEFAULT_EDITION_DATA, signed(signerKey, getCreatorAttestation()), recipients, "");
     }
 

@@ -29,7 +29,7 @@ contract MockBatchEdition is ISingleBatchEdition, IBatchMintable {
         approvedMinter[_owner] = true;
     }
 
-    function isPrimaryOwner(address /* tokenOwner */) external pure returns (bool) {
+    function isPrimaryOwner(address /* tokenOwner */ ) external pure returns (bool) {
         return false;
     }
 
