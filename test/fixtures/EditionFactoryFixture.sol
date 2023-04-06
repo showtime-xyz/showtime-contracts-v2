@@ -112,6 +112,21 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
         return create(DEFAULT_EDITION_DATA, signed(signerKey, getCreatorAttestation()), "");
     }
 
+    function mintBatch(
+        address edition,
+        bytes memory recipients,
+        bytes memory expectedError
+    ) public returns (uint256) {
+        // the attestation is bound to a specific relayer
+        vm.prank(relayer);
+
+        if (expectedError.length > 0) {
+            vm.expectRevert(expectedError);
+        }
+
+        return editionFactory.mintBatch(edition, recipients, signed(signerKey, getCreatorAttestation(edition, creator)));
+    }
+
     function getCreatorAttestation() public view returns (Attestation memory) {
         return getCreatorAttestation(DEFAULT_EDITION_DATA);
     }
@@ -123,12 +138,19 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
     {
         uint256 editionId = getEditionId(editionData);
         address editionAddr = getExpectedEditionAddr(editionData.editionImpl, editionId);
+        return getCreatorAttestation(editionAddr, editionData.creatorAddr);
+    }
 
+    function getCreatorAttestation(address editionAddr, address creatorAddr)
+        public
+        view
+        returns (Attestation memory creatorAttestation)
+    {
         creatorAttestation = Attestation({
             context: getExpectedContext(),
             beneficiary: getBeneficiary(editionAddr, relayer),
             validUntil: block.timestamp + 2 minutes,
-            nonce: verifier.nonces(editionData.creatorAddr)
+            nonce: verifier.nonces(creatorAddr)
         });
     }
 
