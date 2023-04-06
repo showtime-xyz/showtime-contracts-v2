@@ -26,23 +26,26 @@ contract MultiBatchEditionTest is Test, ShowtimeVerifierFixture, EditionFactoryF
 
     function test_e2e_happyPath() public {
         EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl);
+        SignedAttestation memory signedAttestation = signed(signerKey, getAttestation(editionData));
 
-        address edition = create(editionData);
+        vm.prank(relayer);
+        address edition = editionFactory.create(editionData, signedAttestation);
+
         MultiBatchEditionStub multiBatchEdition = MultiBatchEditionStub(edition);
         multiBatchEdition.setMaxSupply(300);
 
-        address startingAddr = address(1);
+        address startingAddr = address(0);
 
-        mintBatch(edition, Addresses.make(startingAddr, 100), "");
+        mintBatch(edition, Addresses.make(address(uint160(startingAddr)), 100), "");
         mintBatch(edition, Addresses.make(address(uint160(startingAddr) + 100), 100), "");
         mintBatch(edition, Addresses.make(address(uint160(startingAddr) + 200), 100), "");
 
         assertEq(multiBatchEdition.totalSupply(), 300);
 
         for (uint160 i = 0; i < 300; i++) {
-            assertTrue(multiBatchEdition.isPrimaryOwner(address(uint160(startingAddr) + i)));
+            assertTrue(multiBatchEdition.isPrimaryOwner(address(uint160(startingAddr) + i + 1)));
         }
 
-        assertFalse(multiBatchEdition.isPrimaryOwner(address(uint160(startingAddr) + 300)));
+        assertFalse(multiBatchEdition.isPrimaryOwner(address(301)));
     }
 }
