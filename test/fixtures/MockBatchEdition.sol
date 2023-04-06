@@ -47,11 +47,6 @@ contract MockBatchEdition is ISingleBatchEdition, IBatchMintable {
         // mockedy mock mock
     }
 
-    // you'd want this to be onlyOwner or something, but we're a mock
-    function setApprovedMinter(address minter, bool allowed) external {
-        approvedMinter[minter] = allowed;
-    }
-
     function setExternalUrl(string calldata _externalUrl) external {
         // mockedy mock mock
     }
