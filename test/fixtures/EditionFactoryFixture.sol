@@ -29,20 +29,12 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
     EditionData internal DEFAULT_EDITION_DATA;
 
     EditionFactory internal editionFactory;
-    ShowtimeVerifier internal verifier;
 
     address creator = makeAddr("creator");
     address relayer = makeAddr("relayer");
-    address verifierOwner = makeAddr("verifierOwner");
-    address signerAddr;
-    uint256 signerKey;
 
     function __EditionFactoryFixture_setUp() internal {
-        // configure verifier
-        verifier = new ShowtimeVerifier(verifierOwner);
-        (signerAddr, signerKey) = makeAddrAndKey("signer");
-        vm.prank(verifierOwner);
-        verifier.registerSigner(signerAddr, 7);
+        __ShowtimeVerifierFixture_setUp();
 
         // configure editionFactory
         editionFactory = new EditionFactory(address(verifier));
@@ -63,10 +55,6 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
         });
     }
 
-    function getVerifier() public view override returns (ShowtimeVerifier) {
-        return verifier;
-    }
-
     /// @dev takes care of pranking the relayer
     function createWithBatch(
         EditionData memory editionData,
@@ -85,7 +73,7 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
     }
 
     function createWithBatch(bytes memory recipients) public returns (address newEdition) {
-        return createWithBatch(DEFAULT_EDITION_DATA, signed(signerKey, getCreatorAttestation()), recipients, "");
+        return createWithBatch(DEFAULT_EDITION_DATA, signed(signerKey, getAttestation()), recipients, "");
     }
 
     /// @dev takes care of pranking the relayer
@@ -105,11 +93,11 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
     }
 
     function create(EditionData memory editionData) public returns (address newEdition) {
-        return create(editionData, signed(signerKey, getCreatorAttestation(editionData)), "");
+        return create(editionData, signed(signerKey, getAttestation(editionData)), "");
     }
 
     function create() public returns (address newEdition) {
-        return create(DEFAULT_EDITION_DATA, signed(signerKey, getCreatorAttestation()), "");
+        return create(DEFAULT_EDITION_DATA, signed(signerKey, getAttestation()), "");
     }
 
     function mintBatch(
@@ -117,40 +105,43 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
         bytes memory recipients,
         bytes memory expectedError
     ) public returns (uint256) {
-        // the attestation is bound to a specific relayer
-        vm.prank(relayer);
+        SignedAttestation memory signedAttestation = signed(signerKey, getAttestation(edition, relayer));
 
         if (expectedError.length > 0) {
             vm.expectRevert(expectedError);
         }
 
-        return editionFactory.mintBatch(edition, recipients, signed(signerKey, getCreatorAttestation(edition, creator)));
+        // the attestation is bound to a specific relayer
+        vm.prank(relayer);
+        return editionFactory.mintBatch(edition, recipients, signedAttestation);
     }
 
-    function getCreatorAttestation() public view returns (Attestation memory) {
-        return getCreatorAttestation(DEFAULT_EDITION_DATA);
+    /// attestation for the default edition and the default relayer
+    function getAttestation() public view returns (Attestation memory) {
+        return getAttestation(DEFAULT_EDITION_DATA);
     }
 
-    function getCreatorAttestation(EditionData memory editionData)
+    /// predict the edition address from the edition data and assume the sender is the relayer
+    function getAttestation(EditionData memory editionData)
         public
         view
         returns (Attestation memory creatorAttestation)
     {
         uint256 editionId = getEditionId(editionData);
         address editionAddr = getExpectedEditionAddr(editionData.editionImpl, editionId);
-        return getCreatorAttestation(editionAddr, editionData.creatorAddr);
+        return getAttestation(editionAddr, relayer);
     }
 
-    function getCreatorAttestation(address editionAddr, address creatorAddr)
+    function getAttestation(address editionAddr, address msgSender)
         public
         view
         returns (Attestation memory creatorAttestation)
     {
         creatorAttestation = Attestation({
             context: getExpectedContext(),
-            beneficiary: getBeneficiary(editionAddr, relayer),
+            beneficiary: getBeneficiary(editionAddr, msgSender),
             validUntil: block.timestamp + 2 minutes,
-            nonce: verifier.nonces(creatorAddr)
+            nonce: verifier.nonces(msgSender)
         });
     }
 

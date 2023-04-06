@@ -57,7 +57,7 @@ contract SingleBatchEditionTest is Test, EditionFactoryFixture {
 
     function test_createWithBatch_withWrongContext() public {
         // when we have an attestation with the wrong context
-        Attestation memory creatorAttestation = getCreatorAttestation();
+        Attestation memory creatorAttestation = getAttestation();
         address expectedAddr = creatorAttestation.context;
         creatorAttestation.context = address(this); // nonsense context
 
@@ -72,7 +72,7 @@ contract SingleBatchEditionTest is Test, EditionFactoryFixture {
 
     function test_createWithBatch_withWrongNonce() public {
         // when we have an attestation with the wrong context
-        Attestation memory creatorAttestation = getCreatorAttestation();
+        Attestation memory creatorAttestation = getAttestation();
 
         uint256 badNonce = uint256(uint160(address(this)));
         creatorAttestation.nonce = badNonce;
@@ -93,14 +93,14 @@ contract SingleBatchEditionTest is Test, EditionFactoryFixture {
         // second one should fail
         createWithBatch(
             DEFAULT_EDITION_DATA,
-            signed(signerKey, getCreatorAttestation()),
+            signed(signerKey, getAttestation()),
             abi.encodePacked(claimer),
             abi.encodeWithSignature("DuplicateEdition(address)", editionAddr)
         );
     }
 
     function test_createWithBatch_canNotHijackCreatorAttestation() public {
-        SignedAttestation memory signedAttestation = signed(signerKey, getCreatorAttestation());
+        SignedAttestation memory signedAttestation = signed(signerKey, getAttestation());
 
         // when the badActor tries to steal the attestation
         signedAttestation.attestation.beneficiary = badActor;
@@ -135,14 +135,14 @@ contract SingleBatchEditionTest is Test, EditionFactoryFixture {
 
     function test_createWithBatch_emptyBatchMint() public {
         // when we mint a batch with no claimers, it fails with INVALID_ADDRESSES
-        createWithBatch(DEFAULT_EDITION_DATA, signed(signerKey, getCreatorAttestation()), "", "INVALID_ADDRESSES");
+        createWithBatch(DEFAULT_EDITION_DATA, signed(signerKey, getAttestation()), "", "INVALID_ADDRESSES");
     }
 
     function test_createWithBatch_mintWithDuplicateClaimer() public {
         // when we mint a batch with a duplicate claimer, it fails with ADDRESSES_NOT_SORTED
         createWithBatch(
             DEFAULT_EDITION_DATA,
-            signed(signerKey, getCreatorAttestation()),
+            signed(signerKey, getAttestation()),
             abi.encodePacked(claimer, claimer),
             "ADDRESSES_NOT_SORTED"
         );

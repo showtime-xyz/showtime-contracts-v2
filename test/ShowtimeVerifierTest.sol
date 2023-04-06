@@ -15,35 +15,27 @@ contract ShowtimeVerifierTest is Test, ShowtimeVerifierFixture {
     event SignerRevoked(address signer);
     event ManagerUpdated(address newmanager);
 
-    address internal owner;
     address internal manager;
     address internal alice;
     address internal bob;
 
-    uint256 internal signerKey;
-    address internal signer;
-
     uint256 internal badActorKey;
     address internal badActor;
-
-    ShowtimeVerifier internal verifier;
 
     Attestation internal attestation;
 
     function setUp() public {
-        owner = makeAddr("owner");
+        __ShowtimeVerifierFixture_setUp();
+
         manager = makeAddr("manager");
         alice = makeAddr("alice");
         bob = makeAddr("bob");
-        (signer, signerKey) = makeAddrAndKey("signer");
         (badActor, badActorKey) = makeAddrAndKey("badActor");
 
-        vm.startPrank(owner);
-        verifier = new ShowtimeVerifier(owner);
-
+        vm.startPrank(verifierOwner);
         vm.expectEmit(true, false, false, false);
-        emit SignerAdded(signer, 0);
-        verifier.registerSigner(signer, 42);
+        emit SignerAdded(signerAddr, 0);
+        verifier.registerSigner(signerAddr, 42);
 
         vm.expectEmit(true, true, true, true);
         emit ManagerUpdated(manager);
@@ -55,10 +47,6 @@ contract ShowtimeVerifierTest is Test, ShowtimeVerifierFixture {
 
     function reasonableValidUntil() public view returns (uint256) {
         return block.timestamp + verifier.MAX_ATTESTATION_VALIDITY_SECONDS() / 2;
-    }
-
-    function getVerifier() public view override returns (ShowtimeVerifier) {
-        return verifier;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -103,8 +91,8 @@ contract ShowtimeVerifierTest is Test, ShowtimeVerifierFixture {
         // when the signer is revoked
         vm.prank(manager);
         vm.expectEmit(true, true, true, true);
-        emit SignerRevoked(signer);
-        verifier.revokeSigner(signer);
+        emit SignerRevoked(signerAddr);
+        verifier.revokeSigner(signerAddr);
 
         // then verification fails
         SignedAttestation memory signedAttestation = signed(signerKey, attestation);
@@ -205,7 +193,7 @@ contract ShowtimeVerifierTest is Test, ShowtimeVerifierFixture {
     function testBadActorCanNotRevokeSigner() public {
         vm.prank(badActor);
         vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
-        verifier.revokeSigner(signer);
+        verifier.revokeSigner(signerAddr);
     }
 
     function testBadActorCanNotSetmanager() public {
@@ -215,26 +203,26 @@ contract ShowtimeVerifierTest is Test, ShowtimeVerifierFixture {
     }
 
     function testOverridingSignerValidity() public {
-        uint256 startingValidUntil = verifier.signerValidity(signer);
+        uint256 startingValidUntil = verifier.signerValidity(signerAddr);
 
         // when we register the signer again with a bigger validity period
         vm.prank(manager);
-        verifier.registerSigner(signer, 365);
+        verifier.registerSigner(signerAddr, 365);
 
         // then the new validity period is used
-        uint256 extendedValidUntil = verifier.signerValidity(signer);
+        uint256 extendedValidUntil = verifier.signerValidity(signerAddr);
         assertLt(startingValidUntil, extendedValidUntil);
 
         // when we register the signer again with a smaller validity period
         vm.prank(manager);
-        uint256 restrictedValidUntil = verifier.registerSigner(signer, 1);
+        uint256 restrictedValidUntil = verifier.registerSigner(signerAddr, 1);
         assertLt(restrictedValidUntil, extendedValidUntil);
     }
 
     function testBadActorCanNotRegisterAndRevoke() public {
         vm.prank(badActor);
         vm.expectRevert(abi.encodeWithSignature("Unauthorized()"));
-        verifier.registerAndRevoke(badActor, signer, 365);
+        verifier.registerAndRevoke(badActor, signerAddr, 365);
     }
 
     function testRegisterAndRevoke() public {
@@ -243,12 +231,12 @@ contract ShowtimeVerifierTest is Test, ShowtimeVerifierFixture {
         // when the manager calls registerAndRevoke
         vm.expectEmit(true, false, false, false);
         emit SignerAdded(newSigner, 0);
-        emit SignerRevoked(signer);
+        emit SignerRevoked(signerAddr);
         vm.prank(manager);
-        verifier.registerAndRevoke(newSigner, signer, 365);
+        verifier.registerAndRevoke(newSigner, signerAddr, 365);
 
         // then the old signer is revoked and the new signer is registered
-        assertEq(verifier.signerValidity(signer), 0);
+        assertEq(verifier.signerValidity(signerAddr), 0);
         assertGt(verifier.signerValidity(newSigner), 0);
     }
 }

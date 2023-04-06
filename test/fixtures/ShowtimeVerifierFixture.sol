@@ -6,12 +6,23 @@ import {Test} from "forge-std/Test.sol";
 import {Attestation, SignedAttestation} from "src/interfaces/IShowtimeVerifier.sol";
 import {ShowtimeVerifier} from "src/ShowtimeVerifier.sol";
 
-abstract contract ShowtimeVerifierFixture is Test {
-    function getVerifier() public view virtual returns (ShowtimeVerifier);
+contract ShowtimeVerifierFixture is Test {
+    ShowtimeVerifier internal verifier;
+    address internal verifierOwner;
+    address internal signerAddr;
+    uint256 internal signerKey;
+
+    function __ShowtimeVerifierFixture_setUp() internal {
+        // configure verifier
+        verifierOwner = makeAddr("verifierOwner");
+        verifier = new ShowtimeVerifier(verifierOwner);
+        (signerAddr, signerKey) = makeAddrAndKey("signer");
+
+        vm.prank(verifierOwner);
+        verifier.registerSigner(signerAddr, 7);
+    }
 
     function digest(Attestation memory _attestation) public view returns (bytes32) {
-        ShowtimeVerifier verifier = getVerifier();
-
         bytes memory encodedStruct = verifier.encode(_attestation);
         bytes32 structHash = keccak256(abi.encodePacked(verifier.REQUEST_TYPE_HASH(), encodedStruct));
         return keccak256(abi.encodePacked("\x19\x01", verifier.domainSeparator(), structHash));
@@ -24,5 +35,10 @@ abstract contract ShowtimeVerifierFixture is Test {
 
     function signed(uint256 key, Attestation memory someAttestation) public view returns (SignedAttestation memory) {
         return SignedAttestation({attestation: someAttestation, signature: sign(key, someAttestation)});
+    }
+
+    /// @dev signs an attestation with the default signer key
+    function signed(Attestation memory someAttestation) public view returns (SignedAttestation memory) {
+        return signed(signerKey, someAttestation);
     }
 }
