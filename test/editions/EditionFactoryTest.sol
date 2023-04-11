@@ -7,7 +7,7 @@ import "nft-editions/interfaces/Errors.sol";
 
 import {EditionFactory, EditionData} from "src/editions/EditionFactory.sol";
 import {EditionFactoryFixture, EditionDataWither} from "test/fixtures/EditionFactoryFixture.sol";
-import {IBatchMintable} from "src/editions/interfaces/IBatchMintable.sol";
+import {IBatchMintable} from "nft-editions/interfaces/IBatchMintable.sol";
 import {MockBatchEdition} from "test/fixtures/MockBatchEdition.sol";
 import {ShowtimeVerifierFixture, Attestation, SignedAttestation} from "test/fixtures/ShowtimeVerifierFixture.sol";
 import "src/editions/interfaces/Errors.sol";

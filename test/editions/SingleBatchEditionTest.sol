@@ -2,7 +2,7 @@
 pragma solidity ^0.8.7;
 
 import {SingleBatchEdition} from "nft-editions/SingleBatchEdition.sol";
-import {Addresses} from "nft-editions/utils/Addresses.sol";
+import {Addresses} from "SS2ERC721-helpers/Addresses.sol";
 import {Test} from "lib/forge-std/src/Test.sol";
 import "nft-editions/interfaces/Errors.sol";
 import {SSTORE2} from "solmate/utils/SSTORE2.sol";

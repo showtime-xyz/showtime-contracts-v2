@@ -3,10 +3,10 @@ pragma solidity ^0.8.7;
 
 import {ClonesUpgradeable} from "@openzeppelin-contracts-upgradeable/proxy/ClonesUpgradeable.sol";
 
-import {SingleBatchEdition, ISingleBatchEdition} from "nft-editions/SingleBatchEdition.sol";
+import {IBatchMintable} from "nft-editions/interfaces/IBatchMintable.sol";
+import {IEdition} from "nft-editions/interfaces/IEdition.sol";
 
 import {IBatchEditionMinter} from "src/editions/interfaces/IBatchEditionMinter.sol";
-import {IBatchMintable} from "src/editions/interfaces/IBatchMintable.sol";
 import {IShowtimeVerifier, Attestation, SignedAttestation} from "src/interfaces/IShowtimeVerifier.sol";
 
 import "./interfaces/Errors.sol";
@@ -66,11 +66,9 @@ contract EditionFactory is IBatchEditionMinter {
         public
         returns (address editionAddress)
     {
-        editionAddress = beforeMint(data, signedAttestation);
+        editionAddress = _createEdition(data, signedAttestation);
 
         // we don't mint at this stage, we expect subsequent calls to `mintBatch`
-
-        afterMint(editionAddress, data);
     }
 
     /// Create and mint a new batch edition contract with a deterministic address
@@ -84,13 +82,10 @@ contract EditionFactory is IBatchEditionMinter {
         SignedAttestation calldata signedAttestation
     ) external returns (address editionAddress) {
         // this will revert if the attestation is invalid
-        editionAddress = beforeMint(data, signedAttestation);
+        editionAddress = _createEdition(data, signedAttestation);
 
         // mint a batch, using a direct list of recipients
         IBatchMintable(editionAddress).mintBatch(packedRecipients);
-
-        // finish configuring the edition
-        afterMint(editionAddress, data);
     }
 
     /// Create and mint a new batch edition contract with a deterministic address
@@ -102,13 +97,10 @@ contract EditionFactory is IBatchEditionMinter {
         returns (address editionAddress)
     {
         // this will revert if the attestation is invalid
-        editionAddress = beforeMint(data, signedAttestation);
+        editionAddress = _createEdition(data, signedAttestation);
 
         // mint a batch, using an SSTORE2 pointer
         IBatchMintable(editionAddress).mintBatch(pointer);
-
-        // finish configuring the edition
-        afterMint(editionAddress, data);
     }
 
     function mintBatch(
@@ -163,21 +155,20 @@ contract EditionFactory is IBatchEditionMinter {
         return uint256(keccak256(abi.encodePacked(data.creatorAddr, data.name, data.animationUrl, data.imageUrl)));
     }
 
-    function getEditionAtId(address editionImpl, uint256 editionId) public view returns (ISingleBatchEdition) {
+    function getEditionAtId(address editionImpl, uint256 editionId) public view returns (address) {
         if (editionImpl == address(0)) {
             revert NullAddress();
         }
 
-        return ISingleBatchEdition(
-            ClonesUpgradeable.predictDeterministicAddress(editionImpl, bytes32(editionId), address(this))
-        );
+        return
+            ClonesUpgradeable.predictDeterministicAddress(editionImpl, bytes32(editionId), address(this));
     }
 
     /*//////////////////////////////////////////////////////////////
                            INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function beforeMint(EditionData calldata data, SignedAttestation calldata signedAttestation)
+    function _createEdition(EditionData calldata data, SignedAttestation calldata signedAttestation)
         internal
         returns (address editionAddress)
     {
@@ -193,9 +184,11 @@ contract EditionFactory is IBatchEditionMinter {
             revert DuplicateEdition(predicted);
         }
 
+        // create the edition
         editionAddress = ClonesUpgradeable.cloneDeterministic(editionImpl, bytes32(editionId));
-        ISingleBatchEdition edition = ISingleBatchEdition(editionAddress);
+        IEdition edition = IEdition(editionAddress);
 
+        // initialize it
         try edition.initialize(
             address(this), // owner
             data.name,
@@ -203,8 +196,9 @@ contract EditionFactory is IBatchEditionMinter {
             data.description,
             data.animationUrl,
             data.imageUrl,
+            0, // editionSize
             data.royaltyBPS,
-            address(this) // minter
+            0 // mintPeriodSeconds
         ) {
             // nothing to do
         } catch {
@@ -216,10 +210,9 @@ contract EditionFactory is IBatchEditionMinter {
             }
         }
 
-        emit CreatedBatchEdition(editionId, data.creatorAddr, address(edition), data.tags);
-    }
+        emit CreatedBatchEdition(editionId, data.creatorAddr, editionAddress, data.tags);
 
-    function afterMint(address edition, EditionData calldata data) internal {
+        // set the creator name
         string memory creatorName = data.creatorName;
         if (bytes(creatorName).length > 0) {
             string[] memory propertyNames = new string[](1);
@@ -228,15 +221,19 @@ contract EditionFactory is IBatchEditionMinter {
             string[] memory propertyValues = new string[](1);
             propertyValues[0] = data.creatorName;
 
-            ISingleBatchEdition(edition).setStringProperties(propertyNames, propertyValues);
+            edition.setStringProperties(propertyNames, propertyValues);
         }
 
+        // set the external url
         string memory externalUrl = data.externalUrl;
         if (bytes(externalUrl).length > 0) {
-            ISingleBatchEdition(edition).setExternalUrl(data.externalUrl);
+            edition.setExternalUrl(data.externalUrl);
         }
 
+        // configure the minter
+        edition.setApprovedMinter(data.minterAddr, true);
+
         // and finally transfer ownership of the configured contract to the actual creator
-        IOwnable(edition).transferOwnership(data.creatorAddr);
+        IOwnable(editionAddress).transferOwnership(data.creatorAddr);
     }
 }

@@ -5,5 +5,5 @@
 	path = lib/openzeppelin-contracts
 	url = https://github.com/OpenZeppelin/openzeppelin-contracts
 [submodule "lib/nft-editions"]
-	path = lib/nft-editions
+	path = showtime-xyz/nft-editions
 	url = https://github.com/showtime-xyz/nft-editions
