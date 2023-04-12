@@ -6,7 +6,7 @@ import {ClonesUpgradeable} from "@openzeppelin-contracts-upgradeable/proxy/Clone
 import {IBatchMintable} from "nft-editions/interfaces/IBatchMintable.sol";
 import {IEdition} from "nft-editions/interfaces/IEdition.sol";
 
-import {IBatchEditionMinter} from "src/editions/interfaces/IBatchEditionMinter.sol";
+import {EditionData, IEditionFactory} from "src/editions/interfaces/IEditionFactory.sol";
 import {IShowtimeVerifier, Attestation, SignedAttestation} from "src/interfaces/IShowtimeVerifier.sol";
 
 import "./interfaces/Errors.sol";
@@ -15,38 +15,7 @@ interface IOwnable {
     function transferOwnership(address newOwner) external;
 }
 
-/// @param editionImpl the address of the implementation contract for the edition to clone
-/// @param creatorAddr the address that will be configured as the owner of the edition
-/// @param minterAddr the address that will be configured as the allowed minter for the edition
-/// @param name Name of the edition contract
-/// @param description Description of the edition entry
-/// @param animationUrl Animation url (optional) of the edition entry
-/// @param imageUrl Metadata: Image url (semi-required) of the edition entry
-/// @param royaltyBPS BPS amount of royalties
-/// @param signedAttestation the attestation to verify along with a corresponding signature
-/// @param externalUrl Metadata: External url (optional) of the edition entry
-/// @param creatorName Metadata: Creator name (optional) of the edition entry
-/// @param tags list of comma-separated tags for this edition, emitted as part of the CreatedBatchEdition event
-struct EditionData {
-    address editionImpl;
-    address creatorAddr;
-    address minterAddr;
-    string name;
-    string description;
-    string animationUrl;
-    string imageUrl;
-    uint256 royaltyBPS;
-    string externalUrl;
-    string creatorName;
-    string tags;
-}
-
-contract EditionFactory is IBatchEditionMinter {
-    /// @dev we expect tags to be a comma-separated list of strings e.g. "music,location,password"
-    event CreatedBatchEdition(
-        uint256 indexed editionId, address indexed creator, address editionContractAddress, string tags
-    );
-
+contract EditionFactory is IEditionFactory {
     string internal constant SYMBOL = unicode"✦ SHOWTIME";
 
     IShowtimeVerifier public immutable showtimeVerifier;
@@ -72,7 +41,6 @@ contract EditionFactory is IBatchEditionMinter {
     }
 
     /// Create and mint a new batch edition contract with a deterministic address
-
     /// @param packedRecipients an abi.encodePacked() array of recipient addresses for the batch mint
     /// @param signedAttestation a signed message from Showtime authorizing this action on behalf of the edition creator
     /// @return editionAddress the address of the created edition
@@ -80,7 +48,7 @@ contract EditionFactory is IBatchEditionMinter {
         EditionData calldata data,
         bytes calldata packedRecipients,
         SignedAttestation calldata signedAttestation
-    ) external returns (address editionAddress) {
+    ) external override returns (address editionAddress) {
         // this will revert if the attestation is invalid
         editionAddress = _createEdition(data, signedAttestation);
 
@@ -93,7 +61,7 @@ contract EditionFactory is IBatchEditionMinter {
     /// @param signedAttestation a signed message from Showtime authorizing this action on behalf of the edition creator
     /// @return editionAddress the address of the created edition
     function createWithBatch(EditionData calldata data, address pointer, SignedAttestation calldata signedAttestation)
-        public
+        external override
         returns (address editionAddress)
     {
         // this will revert if the attestation is invalid
@@ -105,12 +73,29 @@ contract EditionFactory is IBatchEditionMinter {
 
     function mintBatch(
         address editionAddress,
+        address pointer,
+        SignedAttestation calldata signedAttestation
+    ) external override returns (uint256 numMinted) {
+        validateAttestation(signedAttestation, editionAddress, msg.sender);
+
+        return IBatchMintable(editionAddress).mintBatch(pointer);
+    }
+
+    function mintBatch(
+        address editionAddress,
         bytes calldata packedRecipients,
         SignedAttestation calldata signedAttestation
     ) external override returns (uint256 numMinted) {
         validateAttestation(signedAttestation, editionAddress, msg.sender);
 
         return IBatchMintable(editionAddress).mintBatch(packedRecipients);
+    }
+
+    /// do a single real time mint
+    function mint(address editionAddress, address to, SignedAttestation calldata signedAttestation) external override returns (uint256 tokenId) {
+        validateAttestation(signedAttestation, editionAddress, msg.sender);
+
+        return IEdition(editionAddress).mint(to);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -196,9 +181,9 @@ contract EditionFactory is IBatchEditionMinter {
             data.description,
             data.animationUrl,
             data.imageUrl,
-            0, // editionSize
-            data.royaltyBPS,
-            0 // mintPeriodSeconds
+            data.editionSize,
+            data.royaltiesBPS,
+            data.mintPeriodSeconds
         ) {
             // nothing to do
         } catch {
@@ -210,7 +195,7 @@ contract EditionFactory is IBatchEditionMinter {
             }
         }
 
-        emit CreatedBatchEdition(editionId, data.creatorAddr, editionAddress, data.tags);
+        emit CreatedEdition(editionId, data.creatorAddr, editionAddress, data.tags);
 
         // set the creator name
         string memory creatorName = data.creatorName;
@@ -231,7 +216,16 @@ contract EditionFactory is IBatchEditionMinter {
         }
 
         // configure the minter
-        edition.setApprovedMinter(data.minterAddr, true);
+        address minterAddr = data.minterAddr;
+        if (minterAddr != address(0)) {
+            edition.setApprovedMinter(minterAddr, true);
+        }
+
+        // configure the operator filter
+        bool enableDefaultOperatorFilter = data.enableDefaultOperatorFilter;
+        if (enableDefaultOperatorFilter) {
+            edition.enableDefaultOperatorFilter();
+        }
 
         // and finally transfer ownership of the configured contract to the actual creator
         IOwnable(editionAddress).transferOwnership(data.creatorAddr);

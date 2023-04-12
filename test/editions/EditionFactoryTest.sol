@@ -15,12 +15,23 @@ import "src/editions/interfaces/Errors.sol";
 contract EditionFactoryTest is Test, ShowtimeVerifierFixture, EditionFactoryFixture {
     using EditionDataWither for EditionData;
 
+    event CreatedEdition(
+        uint256 indexed editionId, address indexed creator, address editionContractAddress, string tags
+    );
+
     address batchImpl;
 
     function setUp() public {
         __EditionFactoryFixture_setUp();
 
         batchImpl = address(new MockBatchEdition());
+    }
+
+    function test_create_emitsEvent() public {
+        // creating a new edition emits the expected event
+        vm.expectEmit(true, true, true, true);
+        emit CreatedEdition(getEditionId(), DEFAULT_EDITION_DATA.creatorAddr, getExpectedEditionAddr(), DEFAULT_EDITION_DATA.tags);
+        create();
     }
 
     function test_create_nullEditionImplReverts() public {

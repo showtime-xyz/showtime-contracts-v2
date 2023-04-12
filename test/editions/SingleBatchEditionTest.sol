@@ -14,16 +14,21 @@ import "src/editions/interfaces/Errors.sol";
 
 contract SingleBatchEditionTest is Test, EditionFactoryFixture {
     using EditionDataWither for EditionData;
+    using Addresses for uint256;
 
-    event CreatedBatchEdition(
+    event CreatedEdition(
         uint256 indexed editionId, address indexed creator, address editionContractAddress, string tags
     );
 
     address claimer = makeAddr("claimer");
     address badActor = makeAddr("badActor");
 
+    address singleBatchImpl;
+
     function setUp() public {
         __EditionFactoryFixture_setUp();
+
+        singleBatchImpl = address(new SingleBatchEdition());
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -36,7 +41,7 @@ contract SingleBatchEditionTest is Test, EditionFactoryFixture {
 
         // the edition creator emits the expected event
         vm.expectEmit(true, true, true, true);
-        emit CreatedBatchEdition(id, creator, expectedAddr, "tag1,tag2");
+        emit CreatedEdition(id, creator, expectedAddr, "tag1,tag2");
         SingleBatchEdition edition = SingleBatchEdition(createWithBatch(abi.encodePacked(claimer)));
 
         // the edition has the expected address
@@ -162,5 +167,109 @@ contract SingleBatchEditionTest is Test, EditionFactoryFixture {
 
         // and the total supply for the edition is n
         assertEq(edition.totalSupply(), n);
+    }
+
+    function test_e2e_limitedEdition(uint256 random) public {
+        uint256 EDITION_SIZE = 1000;
+        uint256 randomTokenId = bound(random, 1, EDITION_SIZE);
+
+        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withEditionSize(EDITION_SIZE);
+        SignedAttestation memory signedAttestation = signed(signerKey, getAttestation(editionData));
+
+        vm.prank(relayer);
+        address edition = editionFactory.create(editionData, signedAttestation);
+
+        SingleBatchEdition singleBatchEdition = SingleBatchEdition(edition);
+
+        // make sure the edition looks the way we expect
+        assertEq(singleBatchEdition.totalSupply(), 0);
+        assertEq(singleBatchEdition.getPrimaryOwnersPointer(0), address(0));
+        assertEq(singleBatchEdition.editionSize(), EDITION_SIZE);
+        assertFalse(singleBatchEdition.isMintingEnded());
+        assertTrue(singleBatchEdition.isApprovedMinter(address(editionFactory)));
+        assertFalse(singleBatchEdition.isApprovedMinter(address(randomTokenId.to_addr()))); // not everybody is approved
+
+        // we can't mint more than the edition size
+        mintBatch(edition, Addresses.make(EDITION_SIZE + 1), abi.encodeWithSelector(SoldOut.selector));
+
+        // mint single batch
+        address startingAddr = address(1);
+        mintBatch(edition, Addresses.make(startingAddr, EDITION_SIZE), "");
+
+        // the edition is now sold out
+        assertEq(singleBatchEdition.totalSupply(), EDITION_SIZE);
+
+        // we expect address(N) to own token N, let's just do a random sampling
+        assertEq(singleBatchEdition.ownerOf(randomTokenId), randomTokenId.to_addr());
+        assertEq(singleBatchEdition.balanceOf(randomTokenId.to_addr()), 1);
+        assertTrue(singleBatchEdition.isPrimaryOwner(randomTokenId.to_addr()));
+
+        // no token ids past the edition size
+        address nonTokenOwner = (EDITION_SIZE + randomTokenId).to_addr();
+        assertFalse(singleBatchEdition.isPrimaryOwner(nonTokenOwner));
+        assertEq(singleBatchEdition.balanceOf(nonTokenOwner), 0);
+
+        vm.expectRevert("NOT_MINTED");
+        singleBatchEdition.ownerOf(EDITION_SIZE + randomTokenId);
+
+        // the batch is full
+        address pointer = singleBatchEdition.getPrimaryOwnersPointer(0);
+        assertTrue(pointer != address(0));
+        assertEq(pointer.code.length, EDITION_SIZE * 20 + 1); // + 1 for the SSTORE2 data offset
+
+        // there is no second batch
+        assertTrue(singleBatchEdition.getPrimaryOwnersPointer(1) == address(0));
+    }
+
+    function test_create_timeLimitedEdition() public {
+        uint256 CLAIM_DURATION_WINDOW_SECONDS = 2 days;
+        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withMintPeriodSeconds(CLAIM_DURATION_WINDOW_SECONDS);
+
+        // create a new edition
+        address editionAddress = create(editionData);
+        SingleBatchEdition edition = SingleBatchEdition(editionAddress);
+        assertFalse(edition.isMintingEnded());
+
+        // warp into the future
+        vm.warp(block.timestamp + CLAIM_DURATION_WINDOW_SECONDS + 1);
+
+        assertTrue(edition.isMintingEnded());
+
+        // can no longer mint
+        mintBatch(editionAddress, Addresses.make(1), abi.encodeWithSelector(TimeLimitReached.selector));
+    }
+
+    function test_createWithBatch_timeLimitedEdition() public {
+        uint256 CLAIM_DURATION_WINDOW_SECONDS = 2 days;
+        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withMintPeriodSeconds(CLAIM_DURATION_WINDOW_SECONDS);
+
+        // create a new edition
+        address editionAddress = createWithBatch(editionData, signed(signerKey, getAttestation(editionData)), Addresses.make(1228), "");
+        SingleBatchEdition edition = SingleBatchEdition(editionAddress);
+        assertFalse(edition.isMintingEnded());
+
+        // warp into the future
+        vm.warp(block.timestamp + CLAIM_DURATION_WINDOW_SECONDS + 1);
+
+        assertTrue(edition.isMintingEnded());
+
+        // can no longer mint
+        // but we're a single batch mint anyway
+    }
+
+    function test_enableDefaultOperatorFilter() public {
+        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withEnableDefaultOperatorFilter(true);
+
+        SingleBatchEdition edition = SingleBatchEdition(create(editionData));
+
+        assertTrue(edition.activeOperatorFilter() != address(0));
+    }
+
+    function test_disableDefaultOperatorFilter() public {
+        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withEnableDefaultOperatorFilter(false);
+
+        SingleBatchEdition edition = SingleBatchEdition(create(editionData));
+
+        assertTrue(edition.activeOperatorFilter() == address(0));
     }
 }

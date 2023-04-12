@@ -21,10 +21,52 @@ library EditionDataWither {
         self.creatorAddr = creatorAddr;
         return self;
     }
+
+    function withMinterAddr(EditionData memory self, address minterAddr) internal pure returns (EditionData memory) {
+        self.minterAddr = minterAddr;
+        return self;
+    }
+
+    function withName(EditionData memory self, string memory name) internal pure returns (EditionData memory) {
+        self.name = name;
+        return self;
+    }
+
+    function withDescription(EditionData memory self, string memory description) internal pure returns (EditionData memory) {
+        self.description = description;
+        return self;
+    }
+
+    function withAnimationUrl(EditionData memory self, string memory animationUrl) internal pure returns (EditionData memory) {
+        self.animationUrl = animationUrl;
+        return self;
+    }
+
+    function withImageUrl(EditionData memory self, string memory imageUrl) internal pure returns (EditionData memory) {
+        self.imageUrl = imageUrl;
+        return self;
+    }
+
+    function withEditionSize(EditionData memory self, uint256 editionSize) internal pure returns (EditionData memory) {
+        self.editionSize = editionSize;
+        return self;
+    }
+
+    function withMintPeriodSeconds(EditionData memory self, uint256 mintPeriodSeconds) internal pure returns (EditionData memory) {
+        self.mintPeriodSeconds = mintPeriodSeconds;
+        return self;
+    }
+
+    function withEnableDefaultOperatorFilter(EditionData memory self, bool enableDefaultOperatorFilter) internal pure returns (EditionData memory) {
+        self.enableDefaultOperatorFilter = enableDefaultOperatorFilter;
+        return self;
+    }
 }
 
 contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
     uint256 internal constant ROYALTY_BPS = 1000;
+    uint256 internal constant BATCH_SIZE = 1228;
+
     address internal immutable SINGLE_BATCH_EDITION_IMPL = address(new SingleBatchEdition());
     EditionData internal DEFAULT_EDITION_DATA;
 
@@ -48,10 +90,13 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
             description: "description",
             animationUrl: "animationUrl",
             imageUrl: "imageUrl",
-            royaltyBPS: ROYALTY_BPS,
+            editionSize: 0,
+            royaltiesBPS: ROYALTY_BPS,
+            mintPeriodSeconds: 0,
             externalUrl: "externalUrl",
             creatorName: "creatorName",
-            tags: "tag1,tag2"
+            tags: "tag1,tag2",
+            enableDefaultOperatorFilter: true
         });
     }
 
@@ -114,6 +159,22 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
         // the attestation is bound to a specific relayer
         vm.prank(relayer);
         return editionFactory.mintBatch(edition, recipients, signedAttestation);
+    }
+
+    function mint(address edition, address to) public returns (uint256 tokenId) {
+        return mint(edition, to, "");
+    }
+
+    function mint(address edition, address to, bytes memory expectedError) public returns (uint256 tokenId) {
+        SignedAttestation memory signedAttestation = signed(signerKey, getAttestation(edition, relayer));
+
+        if (expectedError.length > 0) {
+            vm.expectRevert(expectedError);
+        }
+
+        // the attestation is bound to a specific relayer
+        vm.prank(relayer);
+        tokenId = editionFactory.mint(edition, to, signedAttestation);
     }
 
     /// attestation for the default edition and the default relayer
