@@ -16,17 +16,18 @@ contract MockBatchEdition is IBatchEdition {
 
     function initialize(
         address _owner,
-        string memory _name,
-        string memory _symbol,
-        string memory _description,
-        string memory _animationUrl,
-        string memory _imageUrl,
-        uint256 _editionSize,
-        uint256 _royaltyBPS,
-        uint256 _mintPeriodSeconds
+        string memory /* _name */,
+        string memory /* _symbol */,
+        string memory /* _description */,
+        string memory /* _animationUrl */,
+        string memory /* _imageUrl */,
+        uint256 /* _editionSize */,
+        uint256 /* _royaltyBPS */,
+        uint256 /* _mintPeriodSeconds */
     ) external override {
         approvedMinter[_owner] = true;
     }
+
 
 
     function isPrimaryOwner(
