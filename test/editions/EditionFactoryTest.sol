@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.7;
 
+import {Edition} from "nft-editions/Edition.sol";
 import {SingleBatchEdition} from "nft-editions/SingleBatchEdition.sol";
 import {Test} from "lib/forge-std/src/Test.sol";
 import "nft-editions/interfaces/Errors.sol";
@@ -18,6 +19,10 @@ contract EditionFactoryTest is Test, ShowtimeVerifierFixture, EditionFactoryFixt
     event CreatedEdition(
         uint256 indexed editionId, address indexed creator, address editionContractAddress, string tags
     );
+    event Initialized();
+    event PropertyUpdated(string name, string oldValue, string newValue);
+    event ExternalUrlUpdated(string oldExternalUrl, string newExternalUrl);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     address batchImpl;
 
@@ -27,13 +32,65 @@ contract EditionFactoryTest is Test, ShowtimeVerifierFixture, EditionFactoryFixt
         batchImpl = address(new MockBatchEdition());
     }
 
-    function test_create_emitsEvent() public {
-        // creating a new edition emits the expected event
+    function test_create_emitsCreatedEditionEvent() public {
         vm.expectEmit(true, true, true, true);
         emit CreatedEdition(
             getEditionId(), DEFAULT_EDITION_DATA.creatorAddr, getExpectedEditionAddr(), DEFAULT_EDITION_DATA.tags
         );
+
         create();
+    }
+
+    function test_create_emitsInitializedEvent() public {
+        vm.expectEmit(true, true, true, true);
+        emit Initialized();
+
+        create();
+    }
+
+    function test_create_emitsOwnershipTransferredEventToFactory() public {
+        vm.expectEmit(true, true, true, true);
+        emit OwnershipTransferred(address(0), address(editionFactory));
+
+        create();
+    }
+
+    function test_create_emitsOwnershipTransferredEventToCreator() public {
+        vm.expectEmit(true, true, true, true);
+        emit OwnershipTransferred(address(editionFactory), DEFAULT_EDITION_DATA.creatorAddr);
+
+        create();
+    }
+
+    function test_create_emitsPropertyUpdatedEvent() public {
+        vm.expectEmit(true, true, true, true);
+        emit PropertyUpdated("Creator", "", DEFAULT_EDITION_DATA.creatorName);
+
+        create();
+    }
+
+    function test_create_emitsExternalUrlUpdatedEvent() public {
+        vm.expectEmit(true, true, true, true);
+        emit ExternalUrlUpdated("", DEFAULT_EDITION_DATA.externalUrl);
+
+        create();
+    }
+
+    function test_create_editionHasExpectedConfig() public {
+        Edition edition = Edition(create());
+
+        assertEq(edition.owner(), DEFAULT_EDITION_DATA.creatorAddr);
+
+        assertEq(edition.name(), DEFAULT_EDITION_DATA.name);
+        assertEq(edition.symbol(), unicode"✦ SHOWTIME");
+        assertEq(edition.description(), DEFAULT_EDITION_DATA.description);
+        assertEq(edition.externalUrl(), DEFAULT_EDITION_DATA.externalUrl);
+        assertEq(edition.editionSize(), DEFAULT_EDITION_DATA.editionSize);
+        assertEq(edition.endOfMintPeriod(), 0); // no time limit by default
+
+        (address receiver, uint256 royaltyAmount) = edition.royaltyInfo(/* tokenId */ 1, 100);
+        assertEq(receiver, DEFAULT_EDITION_DATA.creatorAddr);
+        assertEq(royaltyAmount, 10); // default is 10%
     }
 
     function test_create_nullEditionImplReverts() public {
