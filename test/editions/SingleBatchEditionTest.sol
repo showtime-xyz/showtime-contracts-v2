@@ -257,19 +257,19 @@ contract SingleBatchEditionTest is Test, EditionFactoryFixture {
         // but we're a single batch mint anyway
     }
 
-    function test_enableDefaultOperatorFilter() public {
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withEnableDefaultOperatorFilter(true);
+    function test_enableOperatorFilter() public {
+        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withOperatorFilter(address(0xc0ffee));
 
         SingleBatchEdition edition = SingleBatchEdition(create(editionData));
 
-        assertTrue(edition.activeOperatorFilter() != address(0));
+        assertEq(edition.activeOperatorFilter(), address(0xc0ffee));
     }
 
-    function test_disableDefaultOperatorFilter() public {
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withEnableDefaultOperatorFilter(false);
+    function test_disableOperatorFilter() public {
+        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withOperatorFilter(address(0));
 
         SingleBatchEdition edition = SingleBatchEdition(create(editionData));
 
-        assertTrue(edition.activeOperatorFilter() == address(0));
+        assertEq(edition.activeOperatorFilter(), address(0));
     }
 }

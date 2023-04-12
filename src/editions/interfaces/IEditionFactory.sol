@@ -16,7 +16,7 @@ import {IShowtimeVerifier, SignedAttestation} from "src/interfaces/IShowtimeVeri
 /// @param externalUrl Metadata: External url (optional) of the edition entry
 /// @param creatorName Metadata: Creator name (optional) of the edition entry
 /// @param tags list of comma-separated tags for this edition, emitted as part of the CreatedBatchEdition event
-/// @param enableDefaultOperatorFilter whether to enable the default operator filter on the edition
+/// @param operatorFilter address of an operator filter contract, or 0 for no filter (see https://github.com/ProjectOpenSea/operator-filter-registry)
 struct EditionData {
     // factory configuration
     address editionImpl;
@@ -36,7 +36,7 @@ struct EditionData {
     string externalUrl;
     string creatorName;
     string tags;
-    bool enableDefaultOperatorFilter;
+    address operatorFilter;
 }
 
 
