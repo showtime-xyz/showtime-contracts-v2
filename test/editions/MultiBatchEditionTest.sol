@@ -12,7 +12,6 @@ import {MultiBatchEdition} from "nft-editions/MultiBatchEdition.sol";
 import {ShowtimeVerifierFixture, Attestation, SignedAttestation} from "test/fixtures/ShowtimeVerifierFixture.sol";
 import "src/editions/interfaces/Errors.sol";
 
-
 contract MultiBatchEditionTest is Test, ShowtimeVerifierFixture, EditionFactoryFixture {
     using EditionDataWither for EditionData;
     using Addresses for uint256;
@@ -29,7 +28,8 @@ contract MultiBatchEditionTest is Test, ShowtimeVerifierFixture, EditionFactoryF
         uint256 EDITION_SIZE = 2000;
         uint256 randomTokenId = bound(random, 1, EDITION_SIZE);
 
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withEditionSize(EDITION_SIZE);
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withEditionSize(EDITION_SIZE);
         SignedAttestation memory signedAttestation = signed(signerKey, getAttestation(editionData));
 
         vm.prank(relayer);
@@ -89,7 +89,8 @@ contract MultiBatchEditionTest is Test, ShowtimeVerifierFixture, EditionFactoryF
 
     function test_create_timeLimitedEdition() public {
         uint256 CLAIM_DURATION_WINDOW_SECONDS = 2 days;
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withMintPeriodSeconds(CLAIM_DURATION_WINDOW_SECONDS);
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withMintPeriodSeconds(CLAIM_DURATION_WINDOW_SECONDS);
 
         // create a new edition
         address editionAddress = create(editionData);
@@ -107,12 +108,14 @@ contract MultiBatchEditionTest is Test, ShowtimeVerifierFixture, EditionFactoryF
 
     function test_createWithBatch_timeLimitedEdition() public {
         uint256 CLAIM_DURATION_WINDOW_SECONDS = 2 days;
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withMintPeriodSeconds(CLAIM_DURATION_WINDOW_SECONDS);
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withMintPeriodSeconds(CLAIM_DURATION_WINDOW_SECONDS);
 
         // create a new edition
         address startingAddr = address(1);
         bytes memory recipients = Addresses.make(startingAddr, 1228);
-        address editionAddress = createWithBatch(editionData, signed(signerKey, getAttestation(editionData)), recipients, "");
+        address editionAddress =
+            createWithBatch(editionData, signed(signerKey, getAttestation(editionData)), recipients, "");
         MultiBatchEdition edition = MultiBatchEdition(editionAddress);
         assertFalse(edition.isMintingEnded());
 
@@ -126,7 +129,8 @@ contract MultiBatchEditionTest is Test, ShowtimeVerifierFixture, EditionFactoryF
     }
 
     function test_enableOperatorFilter() public {
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withOperatorFilter(address(0xc0ffee));
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withOperatorFilter(address(0xc0ffee));
 
         MultiBatchEdition edition = MultiBatchEdition(create(editionData));
 
@@ -134,7 +138,8 @@ contract MultiBatchEditionTest is Test, ShowtimeVerifierFixture, EditionFactoryF
     }
 
     function test_disableOperatorFilter() public {
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withOperatorFilter(address(0));
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withOperatorFilter(address(0));
 
         MultiBatchEdition edition = MultiBatchEdition(create(editionData));
 

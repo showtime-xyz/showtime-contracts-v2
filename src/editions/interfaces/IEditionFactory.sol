@@ -22,7 +22,6 @@ struct EditionData {
     address editionImpl;
     address creatorAddr;
     address minterAddr;
-
     // initialization data
     string name;
     string description;
@@ -31,14 +30,12 @@ struct EditionData {
     uint256 editionSize;
     uint256 royaltiesBPS;
     uint256 mintPeriodSeconds;
-
     // supplemental data
     string externalUrl;
     string creatorName;
     string tags;
     address operatorFilter;
 }
-
 
 interface IEditionFactory {
     /// @dev we expect tags to be a comma-separated list of strings e.g. "music,location,password"
@@ -47,7 +44,8 @@ interface IEditionFactory {
     );
 
     function create(EditionData calldata data, SignedAttestation calldata signedAttestation)
-        external returns (address editionAddress);
+        external
+        returns (address editionAddress);
 
     function createWithBatch(
         EditionData calldata data,
@@ -55,11 +53,9 @@ interface IEditionFactory {
         SignedAttestation calldata signedAttestation
     ) external returns (address editionAddress);
 
-    function createWithBatch(
-        EditionData calldata data,
-        address pointer,
-        SignedAttestation calldata signedAttestation
-    ) external returns (address editionAddress);
+    function createWithBatch(EditionData calldata data, address pointer, SignedAttestation calldata signedAttestation)
+        external
+        returns (address editionAddress);
 
     function mintBatch(address editionImpl, bytes calldata recipients, SignedAttestation calldata signedAttestation)
         external
@@ -69,7 +65,9 @@ interface IEditionFactory {
         external
         returns (uint256 numMinted);
 
-    function mint(address editionAddress, address to, SignedAttestation calldata signedAttestation) external returns (uint256 tokenId);
+    function mint(address editionAddress, address to, SignedAttestation calldata signedAttestation)
+        external
+        returns (uint256 tokenId);
 
     function showtimeVerifier() external view returns (IShowtimeVerifier);
 }

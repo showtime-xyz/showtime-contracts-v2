@@ -173,7 +173,8 @@ contract SingleBatchEditionTest is Test, EditionFactoryFixture {
         uint256 EDITION_SIZE = 1000;
         uint256 randomTokenId = bound(random, 1, EDITION_SIZE);
 
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withEditionSize(EDITION_SIZE);
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withEditionSize(EDITION_SIZE);
         SignedAttestation memory signedAttestation = signed(signerKey, getAttestation(editionData));
 
         vm.prank(relayer);
@@ -223,7 +224,8 @@ contract SingleBatchEditionTest is Test, EditionFactoryFixture {
 
     function test_create_timeLimitedEdition() public {
         uint256 CLAIM_DURATION_WINDOW_SECONDS = 2 days;
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withMintPeriodSeconds(CLAIM_DURATION_WINDOW_SECONDS);
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withMintPeriodSeconds(CLAIM_DURATION_WINDOW_SECONDS);
 
         // create a new edition
         address editionAddress = create(editionData);
@@ -241,10 +243,12 @@ contract SingleBatchEditionTest is Test, EditionFactoryFixture {
 
     function test_createWithBatch_timeLimitedEdition() public {
         uint256 CLAIM_DURATION_WINDOW_SECONDS = 2 days;
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withMintPeriodSeconds(CLAIM_DURATION_WINDOW_SECONDS);
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withMintPeriodSeconds(CLAIM_DURATION_WINDOW_SECONDS);
 
         // create a new edition
-        address editionAddress = createWithBatch(editionData, signed(signerKey, getAttestation(editionData)), Addresses.make(1228), "");
+        address editionAddress =
+            createWithBatch(editionData, signed(signerKey, getAttestation(editionData)), Addresses.make(1228), "");
         SingleBatchEdition edition = SingleBatchEdition(editionAddress);
         assertFalse(edition.isMintingEnded());
 
@@ -258,7 +262,8 @@ contract SingleBatchEditionTest is Test, EditionFactoryFixture {
     }
 
     function test_enableOperatorFilter() public {
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withOperatorFilter(address(0xc0ffee));
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withOperatorFilter(address(0xc0ffee));
 
         SingleBatchEdition edition = SingleBatchEdition(create(editionData));
 
@@ -266,7 +271,8 @@ contract SingleBatchEditionTest is Test, EditionFactoryFixture {
     }
 
     function test_disableOperatorFilter() public {
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withOperatorFilter(address(0));
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(singleBatchImpl).withOperatorFilter(address(0));
 
         SingleBatchEdition edition = SingleBatchEdition(create(editionData));
 

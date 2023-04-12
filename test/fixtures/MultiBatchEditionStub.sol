@@ -6,11 +6,7 @@ import {SSTORE2} from "solmate/utils/SSTORE2.sol";
 import {IBatchEdition} from "nft-editions/interfaces/IBatchEdition.sol";
 
 contract MultiBatchEditionStub is IBatchEdition {
-    event Transfer(
-        address indexed from,
-        address indexed to,
-        uint256 indexed id
-    );
+    event Transfer(address indexed from, address indexed to, uint256 indexed id);
 
     mapping(address => bool) public approvedMinter;
     address[] public primaryOwnerPointers;
@@ -58,9 +54,7 @@ contract MultiBatchEditionStub is IBatchEdition {
         return false;
     }
 
-    function mintBatch(
-        bytes calldata addresses
-    ) external override returns (uint256) {
+    function mintBatch(bytes calldata addresses) external override returns (uint256) {
         require(approvedMinter[msg.sender], "UNAUTHORIZED_MINTER");
         require(addresses.length % 20 == 0, "INVALID_ADDRESSES");
 
@@ -96,10 +90,7 @@ contract MultiBatchEditionStub is IBatchEdition {
         // mockedy mock mock
     }
 
-    function setStringProperties(
-        string[] calldata names,
-        string[] calldata values
-    ) external {
+    function setStringProperties(string[] calldata names, string[] calldata values) external {
         // mockedy mock mock
     }
 
@@ -111,10 +102,7 @@ contract MultiBatchEditionStub is IBatchEdition {
                            INTERNAL FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    function contains(
-        address pointer,
-        address owner
-    ) internal view returns (uint256) {
+    function contains(address pointer, address owner) internal view returns (uint256) {
         uint256 low = 1;
         uint256 high = length(pointer);
         uint256 mid = (low + high) / 2;
@@ -146,10 +134,7 @@ contract MultiBatchEditionStub is IBatchEdition {
 
     /// treat the data at pointer as a 1-indexed array of addresses
     /// @dev the caller is responsible for ensuring that the pointer is valid and that the index is in bounds
-    function fetch(
-        address pointer,
-        uint256 index
-    ) internal view returns (address) {
+    function fetch(address pointer, uint256 index) internal view returns (address) {
         require(index > 0, "ZERO_ID");
         unchecked {
             uint256 end = index * 20;
@@ -157,9 +142,7 @@ contract MultiBatchEditionStub is IBatchEdition {
         }
     }
 
-    function bytesToAddress(
-        bytes memory b
-    ) internal pure returns (address payable a) {
+    function bytesToAddress(bytes memory b) internal pure returns (address payable a) {
         require(b.length == 20);
         assembly {
             a := shr(96, mload(add(b, 32)))
@@ -184,16 +167,11 @@ contract MultiBatchEditionStub is IBatchEdition {
 
     function endOfMintPeriod() external view override returns (uint256) {}
 
-    function isApprovedMinter(
-        address minter
-    ) external view override returns (bool) {}
+    function isApprovedMinter(address minter) external view override returns (bool) {}
 
     function isMintingEnded() external view override returns (bool) {}
 
-    function setApprovedMinter(
-        address minter,
-        bool allowed
-    ) external override {
+    function setApprovedMinter(address minter, bool allowed) external override {
         approvedMinter[minter] = allowed;
     }
 
@@ -201,7 +179,5 @@ contract MultiBatchEditionStub is IBatchEdition {
 
     function withdraw() external override {}
 
-    function getPrimaryOwnersPointer(
-        uint256 index
-    ) external view override returns (address) {}
+    function getPrimaryOwnersPointer(uint256 index) external view override returns (address) {}
 }

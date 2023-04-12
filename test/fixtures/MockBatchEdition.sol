@@ -16,30 +16,24 @@ contract MockBatchEdition is IBatchEdition {
 
     function initialize(
         address _owner,
-        string memory /* _name */,
-        string memory /* _symbol */,
-        string memory /* _description */,
-        string memory /* _animationUrl */,
-        string memory /* _imageUrl */,
-        uint256 /* _editionSize */,
-        uint256 /* _royaltyBPS */,
+        string memory, /* _name */
+        string memory, /* _symbol */
+        string memory, /* _description */
+        string memory, /* _animationUrl */
+        string memory, /* _imageUrl */
+        uint256, /* _editionSize */
+        uint256, /* _royaltyBPS */
         uint256 /* _mintPeriodSeconds */
     ) external override {
         approvedMinter[_owner] = true;
     }
 
-
-
-    function isPrimaryOwner(
-        address /* tokenOwner */
-    ) external pure returns (bool) {
+    function isPrimaryOwner(address /* tokenOwner */ ) external pure returns (bool) {
         // mock mock mock
         return false;
     }
 
-    function mintBatch(
-        bytes calldata addresses
-    ) external view override returns (uint256) {
+    function mintBatch(bytes calldata addresses) external view override returns (uint256) {
         require(approvedMinter[msg.sender], "UNAUTHORIZED_MINTER");
         return addresses.length / 20;
     }
@@ -52,10 +46,7 @@ contract MockBatchEdition is IBatchEdition {
         // mockedy mock mock
     }
 
-    function setStringProperties(
-        string[] calldata names,
-        string[] calldata values
-    ) external {
+    function setStringProperties(string[] calldata names, string[] calldata values) external {
         // mockedy mock mock
     }
 
@@ -77,9 +68,7 @@ contract MockBatchEdition is IBatchEdition {
 
     function endOfMintPeriod() public view override returns (uint256) {}
 
-    function isApprovedMinter(
-        address minter
-    ) external view override returns (bool) {
+    function isApprovedMinter(address minter) external view override returns (bool) {
         return approvedMinter[minter];
     }
 
@@ -87,16 +76,11 @@ contract MockBatchEdition is IBatchEdition {
         return block.timestamp > endOfMintPeriod();
     }
 
-    function setApprovedMinter(
-        address minter,
-        bool allowed
-    ) external override {
+    function setApprovedMinter(address minter, bool allowed) external override {
         approvedMinter[minter] = allowed;
     }
 
     function setOperatorFilter(address operatorFilter) external override {}
 
-    function getPrimaryOwnersPointer(
-        uint256 index
-    ) external view override returns (address) {}
+    function getPrimaryOwnersPointer(uint256 index) external view override returns (address) {}
 }

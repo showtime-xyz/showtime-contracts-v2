@@ -32,12 +32,20 @@ library EditionDataWither {
         return self;
     }
 
-    function withDescription(EditionData memory self, string memory description) internal pure returns (EditionData memory) {
+    function withDescription(EditionData memory self, string memory description)
+        internal
+        pure
+        returns (EditionData memory)
+    {
         self.description = description;
         return self;
     }
 
-    function withAnimationUrl(EditionData memory self, string memory animationUrl) internal pure returns (EditionData memory) {
+    function withAnimationUrl(EditionData memory self, string memory animationUrl)
+        internal
+        pure
+        returns (EditionData memory)
+    {
         self.animationUrl = animationUrl;
         return self;
     }
@@ -52,12 +60,20 @@ library EditionDataWither {
         return self;
     }
 
-    function withMintPeriodSeconds(EditionData memory self, uint256 mintPeriodSeconds) internal pure returns (EditionData memory) {
+    function withMintPeriodSeconds(EditionData memory self, uint256 mintPeriodSeconds)
+        internal
+        pure
+        returns (EditionData memory)
+    {
         self.mintPeriodSeconds = mintPeriodSeconds;
         return self;
     }
 
-    function withOperatorFilter(EditionData memory self, address operatorFilter) internal pure returns (EditionData memory) {
+    function withOperatorFilter(EditionData memory self, address operatorFilter)
+        internal
+        pure
+        returns (EditionData memory)
+    {
         self.operatorFilter = operatorFilter;
         return self;
     }
@@ -145,11 +161,7 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
         return create(DEFAULT_EDITION_DATA, signed(signerKey, getAttestation()), "");
     }
 
-    function mintBatch(
-        address edition,
-        bytes memory recipients,
-        bytes memory expectedError
-    ) public returns (uint256) {
+    function mintBatch(address edition, bytes memory recipients, bytes memory expectedError) public returns (uint256) {
         SignedAttestation memory signedAttestation = signed(signerKey, getAttestation(edition, relayer));
 
         if (expectedError.length > 0) {
