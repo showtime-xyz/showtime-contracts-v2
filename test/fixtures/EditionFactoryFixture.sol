@@ -80,7 +80,7 @@ library EditionDataWither {
 }
 
 contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
-    uint256 internal constant ROYALTY_BPS = 1000;
+    uint256 internal constant ROYALTY_BPS = 10_00;
     uint256 internal constant BATCH_SIZE = 1228;
 
     address internal immutable SINGLE_BATCH_EDITION_IMPL = address(new SingleBatchEdition());
