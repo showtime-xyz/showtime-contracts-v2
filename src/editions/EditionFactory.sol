@@ -61,7 +61,8 @@ contract EditionFactory is IEditionFactory {
     /// @param signedAttestation a signed message from Showtime authorizing this action on behalf of the edition creator
     /// @return editionAddress the address of the created edition
     function createWithBatch(EditionData calldata data, address pointer, SignedAttestation calldata signedAttestation)
-        external override
+        external
+        override
         returns (address editionAddress)
     {
         // this will revert if the attestation is invalid
@@ -71,11 +72,11 @@ contract EditionFactory is IEditionFactory {
         IBatchMintable(editionAddress).mintBatch(pointer);
     }
 
-    function mintBatch(
-        address editionAddress,
-        address pointer,
-        SignedAttestation calldata signedAttestation
-    ) external override returns (uint256 numMinted) {
+    function mintBatch(address editionAddress, address pointer, SignedAttestation calldata signedAttestation)
+        external
+        override
+        returns (uint256 numMinted)
+    {
         validateAttestation(signedAttestation, editionAddress, msg.sender);
 
         return IBatchMintable(editionAddress).mintBatch(pointer);
@@ -92,7 +93,11 @@ contract EditionFactory is IEditionFactory {
     }
 
     /// do a single real time mint
-    function mint(address editionAddress, address to, SignedAttestation calldata signedAttestation) external override returns (uint256 tokenId) {
+    function mint(address editionAddress, address to, SignedAttestation calldata signedAttestation)
+        external
+        override
+        returns (uint256 tokenId)
+    {
         validateAttestation(signedAttestation, editionAddress, msg.sender);
 
         return IEdition(editionAddress).mint(to);
@@ -145,8 +150,7 @@ contract EditionFactory is IEditionFactory {
             revert NullAddress();
         }
 
-        return
-            ClonesUpgradeable.predictDeterministicAddress(editionImpl, bytes32(editionId), address(this));
+        return ClonesUpgradeable.predictDeterministicAddress(editionImpl, bytes32(editionId), address(this));
     }
 
     /*//////////////////////////////////////////////////////////////

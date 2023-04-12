@@ -11,7 +11,6 @@ import {Edition} from "nft-editions/Edition.sol";
 import {ShowtimeVerifierFixture, Attestation, SignedAttestation} from "test/fixtures/ShowtimeVerifierFixture.sol";
 import "src/editions/interfaces/Errors.sol";
 
-
 contract EditionTest is Test, ShowtimeVerifierFixture, EditionFactoryFixture {
     using EditionDataWither for EditionData;
 
@@ -73,7 +72,8 @@ contract EditionTest is Test, ShowtimeVerifierFixture, EditionFactoryFixture {
 
     function test_create_timeLimitedEdition() public {
         uint256 CLAIM_DURATION_WINDOW_SECONDS = 2 days;
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(editionImpl).withMintPeriodSeconds(CLAIM_DURATION_WINDOW_SECONDS);
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(editionImpl).withMintPeriodSeconds(CLAIM_DURATION_WINDOW_SECONDS);
 
         // create a new edition
         address editionAddress = create(editionData);
@@ -90,7 +90,8 @@ contract EditionTest is Test, ShowtimeVerifierFixture, EditionFactoryFixture {
     }
 
     function test_enableOperatorFilter() public {
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(editionImpl).withOperatorFilter(address(0xc0ffee));
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(editionImpl).withOperatorFilter(address(0xc0ffee));
 
         Edition edition = Edition(create(editionData));
 
@@ -98,7 +99,8 @@ contract EditionTest is Test, ShowtimeVerifierFixture, EditionFactoryFixture {
     }
 
     function test_disableOperatorFilter() public {
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(editionImpl).withOperatorFilter(address(0));
+        EditionData memory editionData =
+            DEFAULT_EDITION_DATA.withEditionImpl(editionImpl).withOperatorFilter(address(0));
 
         Edition edition = Edition(create(editionData));
 

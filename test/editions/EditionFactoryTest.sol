@@ -30,7 +30,9 @@ contract EditionFactoryTest is Test, ShowtimeVerifierFixture, EditionFactoryFixt
     function test_create_emitsEvent() public {
         // creating a new edition emits the expected event
         vm.expectEmit(true, true, true, true);
-        emit CreatedEdition(getEditionId(), DEFAULT_EDITION_DATA.creatorAddr, getExpectedEditionAddr(), DEFAULT_EDITION_DATA.tags);
+        emit CreatedEdition(
+            getEditionId(), DEFAULT_EDITION_DATA.creatorAddr, getExpectedEditionAddr(), DEFAULT_EDITION_DATA.tags
+        );
         create();
     }
 
