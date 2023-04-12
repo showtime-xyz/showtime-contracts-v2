@@ -57,8 +57,8 @@ library EditionDataWither {
         return self;
     }
 
-    function withEnableDefaultOperatorFilter(EditionData memory self, bool enableDefaultOperatorFilter) internal pure returns (EditionData memory) {
-        self.enableDefaultOperatorFilter = enableDefaultOperatorFilter;
+    function withOperatorFilter(EditionData memory self, address operatorFilter) internal pure returns (EditionData memory) {
+        self.operatorFilter = operatorFilter;
         return self;
     }
 }
@@ -96,7 +96,7 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
             externalUrl: "externalUrl",
             creatorName: "creatorName",
             tags: "tag1,tag2",
-            enableDefaultOperatorFilter: true
+            operatorFilter: address(0)
         });
     }
 

@@ -222,9 +222,9 @@ contract EditionFactory is IEditionFactory {
         }
 
         // configure the operator filter
-        bool enableDefaultOperatorFilter = data.enableDefaultOperatorFilter;
-        if (enableDefaultOperatorFilter) {
-            edition.enableDefaultOperatorFilter();
+        address operatorFilter = data.operatorFilter;
+        if (operatorFilter != address(0)) {
+            edition.setOperatorFilter(operatorFilter);
         }
 
         // and finally transfer ownership of the configured contract to the actual creator

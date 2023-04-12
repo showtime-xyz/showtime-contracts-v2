@@ -125,19 +125,19 @@ contract MultiBatchEditionTest is Test, ShowtimeVerifierFixture, EditionFactoryF
         mintBatch(editionAddress, abi.encodePacked(address(this)), abi.encodeWithSelector(TimeLimitReached.selector));
     }
 
-    function test_enableDefaultOperatorFilter() public {
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withEnableDefaultOperatorFilter(true);
+    function test_enableOperatorFilter() public {
+        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withOperatorFilter(address(0xc0ffee));
 
         MultiBatchEdition edition = MultiBatchEdition(create(editionData));
 
-        assertTrue(edition.activeOperatorFilter() != address(0));
+        assertEq(edition.activeOperatorFilter(), address(0xc0ffee));
     }
 
-    function test_disableDefaultOperatorFilter() public {
-        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withEnableDefaultOperatorFilter(false);
+    function test_disableOperatorFilter() public {
+        EditionData memory editionData = DEFAULT_EDITION_DATA.withEditionImpl(multiBatchImpl).withOperatorFilter(address(0));
 
         MultiBatchEdition edition = MultiBatchEdition(create(editionData));
 
-        assertTrue(edition.activeOperatorFilter() == address(0));
+        assertEq(edition.activeOperatorFilter(), address(0));
     }
 }
