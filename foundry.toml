@@ -22,10 +22,15 @@ optimizer_runs = 1000000
 via_ir = true
 # optimizer_steps = ''
 
+fs_permissions = [{ access = "read-write", path = "./deployments" }]
+
 [rpc_endpoints]
 mumbai = "${MUMBAI_RPC_URL}"
 polygon = "${POLYGON_RPC_URL}"
+anvil = "http://127.0.0.1:8545"
 
 [etherscan]
 mumbai = { key = "${ETHERSCAN_API_KEY}" }
 polygon = { key = "${ETHERSCAN_API_KEY}" }
+
+
