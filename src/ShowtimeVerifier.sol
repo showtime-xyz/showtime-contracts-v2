@@ -44,7 +44,7 @@ contract ShowtimeVerifier is Ownable, EIP712, IShowtimeVerifier {
         _;
     }
 
-    function domainSeparator() public view returns (bytes32) {
+    function domainSeparator() public view override returns (bytes32) {
         return _domainSeparatorV4();
     }
 
@@ -52,7 +52,7 @@ contract ShowtimeVerifier is Ownable, EIP712, IShowtimeVerifier {
                             VERIFICATION LOGIC
     //////////////////////////////////////////////////////////////*/
 
-    function encode(Attestation memory attestation) public pure returns (bytes memory) {
+    function encode(Attestation memory attestation) public pure override returns (bytes memory) {
         return abi.encode(attestation.beneficiary, attestation.context, attestation.nonce, attestation.validUntil);
     }
 

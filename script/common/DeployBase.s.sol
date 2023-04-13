@@ -29,6 +29,12 @@ abstract contract DeployBase is Script {
         }
     }
 
+    function debug(string memory message, uint256 arg) internal view {
+        if (DEBUG) {
+            console2.log(string.concat("[DEBUG] ", message), arg);
+        }
+    }
+
     function info(string memory message, address arg) internal view {
         console2.log(string.concat("[INFO] ", message), arg);
     }

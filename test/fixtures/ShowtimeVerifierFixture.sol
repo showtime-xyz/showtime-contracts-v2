@@ -4,10 +4,11 @@ pragma solidity ^0.8.7;
 import {Test} from "forge-std/Test.sol";
 
 import {Attestation, SignedAttestation} from "src/interfaces/IShowtimeVerifier.sol";
+import {IShowtimeVerifier} from "src/interfaces/IShowtimeVerifier.sol";
 import {ShowtimeVerifier} from "src/ShowtimeVerifier.sol";
 
 contract ShowtimeVerifierFixture is Test {
-    ShowtimeVerifier internal verifier;
+    IShowtimeVerifier internal verifier;
     address internal verifierOwner;
     address internal signerAddr;
     uint256 internal signerKey;

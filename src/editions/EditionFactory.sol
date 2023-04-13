@@ -113,6 +113,7 @@ contract EditionFactory is IEditionFactory {
     function validateAttestation(SignedAttestation calldata signedAttestation, address edition, address relayer)
         public
         view
+        override
         returns (bool)
     {
         // verify that the context is valid
@@ -141,11 +142,11 @@ contract EditionFactory is IEditionFactory {
         return true;
     }
 
-    function getEditionId(EditionData calldata data) public pure returns (uint256 editionId) {
+    function getEditionId(EditionData calldata data) public pure override returns (uint256 editionId) {
         return uint256(keccak256(abi.encodePacked(data.creatorAddr, data.name, data.animationUrl, data.imageUrl)));
     }
 
-    function getEditionAtId(address editionImpl, uint256 editionId) public view returns (address) {
+    function getEditionAtId(address editionImpl, uint256 editionId) public view override returns (address) {
         if (editionImpl == address(0)) {
             revert NullAddress();
         }

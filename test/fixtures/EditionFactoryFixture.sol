@@ -83,7 +83,7 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
     uint256 internal constant ROYALTY_BPS = 10_00;
     uint256 internal constant BATCH_SIZE = 1228;
 
-    address internal immutable SINGLE_BATCH_EDITION_IMPL = address(new SingleBatchEdition());
+    address internal SINGLE_BATCH_EDITION_IMPL;
     EditionData internal DEFAULT_EDITION_DATA;
 
     EditionFactory internal editionFactory;
@@ -93,6 +93,8 @@ contract EditionFactoryFixture is Test, ShowtimeVerifierFixture {
 
     function __EditionFactoryFixture_setUp() internal {
         __ShowtimeVerifierFixture_setUp();
+
+        SINGLE_BATCH_EDITION_IMPL = address(new SingleBatchEdition());
 
         // configure editionFactory
         editionFactory = new EditionFactory(address(verifier));

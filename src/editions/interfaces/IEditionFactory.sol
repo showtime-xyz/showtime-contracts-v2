@@ -70,4 +70,12 @@ interface IEditionFactory {
         returns (uint256 tokenId);
 
     function showtimeVerifier() external view returns (IShowtimeVerifier);
+
+
+    function validateAttestation(SignedAttestation calldata signedAttestation, address edition, address relayer)
+        external returns (bool);
+
+    function getEditionId(EditionData calldata data) external view returns (uint256 editionId);
+
+    function getEditionAtId(address editionImpl, uint256 editionId) external view returns (address);
 }

@@ -26,7 +26,17 @@ interface IShowtimeVerifier {
     event SignerRevoked(address signer);
     event ManagerUpdated(address newManager);
 
+    function domainSeparator() external view returns (bytes32);
+
+    function encode(Attestation memory attestation) external view returns (bytes memory);
+
+    function MAX_ATTESTATION_VALIDITY_SECONDS() external view returns (uint256);
+
+    function MAX_SIGNER_VALIDITY_DAYS() external view returns (uint256);
+
     function nonces(address) external view returns (uint256);
+
+    function REQUEST_TYPE_HASH() external view returns (bytes32);
 
     function verify(SignedAttestation calldata signedAttestation) external view returns (bool);
 
@@ -47,6 +57,8 @@ interface IShowtimeVerifier {
     ) external returns (bool);
 
     function setManager(address _manager) external;
+
+    function signerValidity(address signer) external view returns (uint256);
 
     function registerSigner(address signer, uint256 validityDays) external returns (uint256 validUntil);
 
