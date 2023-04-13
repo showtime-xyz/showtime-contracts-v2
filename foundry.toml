@@ -30,7 +30,7 @@ polygon = "${POLYGON_RPC_URL}"
 anvil = "http://127.0.0.1:8545"
 
 [etherscan]
-mumbai = { key = "${ETHERSCAN_API_KEY}" }
+mumbai = { key = "${POLYGONSCAN_API_KEY}" }
 polygon = { key = "${POLYGONSCAN_API_KEY}" }
 
 
