@@ -1,3 +1,30 @@
+# Showtime Contracts v2
+
+This repository contains the Solidity smart contracts for the 2023 version of Showtime:
+
+```
+src
+├── ShowtimeVerifier.sol -- verifies that transactions are coming from the trusted showtime.xyz backend
+├── editions
+│   ├── EditionFactory.sol -- interfaces with ShowtimeVerifier and deploys contracts from showtime-xyz/nft-editions
+│   └── interfaces
+│       ├── Errors.sol
+│       └── IEditionFactory.sol
+└── interfaces
+    └── IShowtimeVerifier.sol
+```
+
+## Getting started
+
+You will need to [install Foundry](https://book.getfoundry.sh/getting-started/installation).
+
+Then clone this repository and just build and test:
+
+```sh
+forge build
+forge test
+```
+
 ## Deploy
 
 ```sh
