@@ -21,6 +21,8 @@ You will need to [install Foundry](https://book.getfoundry.sh/getting-started/in
 Then clone this repository and just build and test:
 
 ```sh
+git clone git@github.com:showtime-xyz/showtime-contracts-v2.git
+cd showtime-contracts-v2
 forge build
 forge test
 ```
