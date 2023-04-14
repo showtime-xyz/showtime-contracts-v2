@@ -20,6 +20,6 @@ contract EditionFactoryDeployer is Deployer {
         address verifier = showtimeVerifierDeployer.deploy();
 
         vm.broadcast(deployerPK);
-        return address(new EditionFactory(verifier));
+        return address(new EditionFactory{salt: 0}(verifier));
     }
 }

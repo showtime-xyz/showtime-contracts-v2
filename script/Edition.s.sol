@@ -5,6 +5,7 @@ import "./common/Deployer.s.sol";
 
 import {Edition} from "nft-editions/Edition.sol";
 
+/// @dev much easier to verify on Etherscan with nft-editions deploy scripts
 contract EditionDeployer is Deployer {
     function contractName() public pure override returns (string memory) {
         return "Edition";
