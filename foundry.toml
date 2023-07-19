@@ -27,6 +27,7 @@ fs_permissions = [{ access = "read-write", path = "./deployments" }]
 [rpc_endpoints]
 mumbai = "${MUMBAI_RPC_URL}"
 polygon = "${POLYGON_RPC_URL}"
+base_goerli = "${BASE_GOERLI_RPC_URL}"
 anvil = "http://127.0.0.1:8545"
 
 [etherscan]
